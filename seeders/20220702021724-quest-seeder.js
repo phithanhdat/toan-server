@@ -9,8 +9,11 @@ function shuffleArray(array) {
       array[i] = array[j];
       array[j] = temp;
   }
-      
   return array;
+}
+
+function ranInt(min, max) {
+  return Math.floor(Math.random() * (max + 1 - min)) + min
 }
 
 const foods = ['quả táo', 'quả cam', 'quả chuối', 'cái kẹo', 'cái bánh', 'cái bút', 'quyển vở'];
@@ -25,10 +28,10 @@ const quest_body = [
   '[friends] có [x] [foods], [adults] cho thêm [y] [foods], hỏi bây giờ [friends] có mấy [foods]?',
   'Thực hiện phép tính sau: \n [x] + [y] = ?',
   'Thực hiện phép tính sau: \n [x] - [y] = ?',
-  'Chọn đáp án đúng để điền vào chỗ trống: \n ... + [x] = [y]',
+  'Chọn đáp án đúng để điền vào chỗ trống: \n ... + [y] = [x]',
   'Chọn đáp án đúng để điền vào chỗ trống: \n ... - [x] = [y]',
   'Chọn đáp án đúng để điền vào chỗ trống: \n [x] - ... = [y]',
-  'Chọn đáp án đúng để điền vào chỗ trống: \n [x] + ... = [y]',
+  'Chọn đáp án đúng để điền vào chỗ trống: \n [y] + ... = [x]',
 ]
 
 const getRange = (index) => {
@@ -101,17 +104,17 @@ const getType = (body) => {
   || body.includes('tính sau') && body.includes(' + ')) {
     return 'plus';
   } else if (body.includes('chỗ trống:')) {
-    if (body.includes('... +') || body.includes('- ...')) {
+    if (body.includes('- ...') || body.includes('+ ...') || body.includes('... +')) {
       return 'minus'
-    } else if (body.includes('... -') || body.includes('+ ...')) {
+    } else if (body.includes('... -')) {
       return 'plus'
     }
   }
 } 
 
 const genPlusOperan = (range) => {
-  let total = Math.floor(Math.random() * (range - 2)) + 2;
-  let x = Math.floor(Math.random() * total - 1) + 1;
+  let total = ranInt(2, range);
+  let x = ranInt(1, total - 1);
   let y = total - x;
   let correct = total;
   let a = correct;
@@ -134,10 +137,10 @@ const genPlusOperan = (range) => {
 }
 
 const genMinusOperan = (range) => {
-  const total = Math.floor(Math.random() * (range - 1)) + 1;
-  const x = total;
-  const y = Math.floor(Math.random() * (total - 2)) + 2;
-  const correct = total - y;
+  const bigNum = ranInt(2, range);
+  const x = bigNum;
+  const y = ranInt(1, bigNum-1);
+  const correct = bigNum - y;
   let a = correct;
   let b = a + 1;
   let c = a + 2
@@ -163,11 +166,11 @@ const genMinusOperan = (range) => {
 }
 
 const genMinus3Operan = (range) => {
-  const total = Math.floor(Math.random() * (range - 3)) + 3;
-  const x = total;
-  let y = Math.floor(Math.random() * (total - 2)) + 2;
+  const bigNum = ranInt(3, range);
+  const x = bigNum;
+  let y = ranInt(2, bigNum-1);
   const correct = x - y;
-  const z = Math.floor(Math.random() * (y - 1)) + 1;
+  const z = ranInt(1, y-1);
   y = y - z;
   let a = correct;
   let b = a + 1;
@@ -229,7 +232,7 @@ const fillNumber = (body, range) => {
 module.exports = {
   async up (queryInterface, Sequelize) {
     const questions = [];
-
+    const rans = []
     for (let i = 0; i < 1000; i++) {
       const r = getRange(i);
       let body = getBody();
@@ -242,6 +245,7 @@ module.exports = {
       }
       questions.push(data)
     }
+
     return queryInterface.bulkInsert('Questions', questions);
   },
 
